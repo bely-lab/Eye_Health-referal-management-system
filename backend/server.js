@@ -3,19 +3,13 @@ const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const authenticateToken = require('./authMiddleware'); // Import the middleware
 const cors = require('cors'); // Import cors module
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Debugging: log environment variables
-console.log('PGUSER:', process.env.PGUSER);
-console.log('PGHOST:', process.env.PGHOST);
-console.log('PGDATABASE:', process.env.PGDATABASE);
-console.log('PGPASSWORD:', process.env.PGPASSWORD);
-console.log('PGPORT:', process.env.PGPORT);
-console.log('PORT:', process.env.PORT);
 
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -219,8 +213,37 @@ app.post('/api/get-assessment', async (req, res) => {
     res.status(500).json({ error: 'Error fetching patients' });
   }
 });
+
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'stdassign22@gmail.com',
+    pass: 'zafm yjmt vtoi qkst'  // Use App password if 2-Step Verification is enabled
+  }
+});
+
+app.post('/send-email', (req, res) => {
+  const { to, subject, text } = req.body;
+
+  const mailOptions = {
+    from: 'stdassign22@gmail.com',
+    to,
+    subject,
+    text
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending email:', error);
+      return res.status(500).json({ success: false, message: error.toString() });
+    }
+    console.log('Email sent:', info.response);
+    res.status(200).json({ success: true, message: 'Email sent: ' + info.response });
+  });
+});
+
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Environment variable PGPASSWORD: ${process.env.PGPASSWORD}`); // Check if PGPASSWORD is defined
-  console.log(`Environment variable PGPASSWORD type: ${typeof process.env.PGPASSWORD}`); // Check type of PGPASSWORD
-});
+  });

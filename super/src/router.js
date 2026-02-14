@@ -87,12 +87,12 @@ const routes = [
   {
     path: '/doctor-dashboard',
     component: DoctorDashboard,
-    //meta: { requiresAuth: true, role: 'doctor' },
+    meta: { requiresAuth: true, role: 'doctor' },
   },
   {
     path: '/admin-dashboard',
     component: AdminDashboard,
-    //meta: { requiresAuth: true, role: 'Admin' },
+    meta: { requiresAuth: true, role: 'Admin' },
   },
 ];
 

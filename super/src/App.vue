@@ -3,12 +3,11 @@
     <!-- Navbar -->
     <header class="bg-blue-500 text-white p-4">
       <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-bold">Your Eye Care System</h1>
-        <div v-if="isLoggedIn" class="flex items-center">
-          <span class="mr-4">{{ organizationName }}</span>
-          <span class="mr-4">{{ userRole }}</span>
+        <h1 class="text-xl font-bold">Eye Care System Super Admin Page</h1>
+        <div v-if="isLoggedIn">
+          <span class="mr-4">{{ userRole}}</span>
           <button @click="logout" class="bg-white text-blue-900 px-3 py-1 rounded">
-            <b>Logout</b>
+           <b> Logout</b>
           </button>
         </div>
       </div>
@@ -33,38 +32,22 @@
 </template>
 
 <script>
-import { computed, onMounted } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'App',
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-
-    const isLoggedIn = computed(() => store.getters.isLoggedIn);
-    const userRole = computed(() => store.getters.userRole);
-    const organizationName = computed(() => store.getters.organization?.name || 'Loading...');
-alert(organizationName);
-    const logout = () => {
-      store.dispatch('logout').then(() => {
-        router.push('/login');
-      });
-    };
-
-    onMounted(() => {
-      if (isLoggedIn.value) {
-        store.dispatch('fetchOrganization');
+  computed: {
+    ...mapGetters(['isLoggedIn', 'userName']),
+  },
+  methods: {
+    ...mapActions(['logout']),
+  },
+  watch: {
+    isLoggedIn(newValue) {
+      if (!newValue) {
+        this.$router.push('/login');
       }
-    });
-
-    return {
-      isLoggedIn,
-      userRole,
-      organizationName,
-      logout,
-    };
+    },
   },
 };
 </script>
@@ -82,6 +65,32 @@ alert(organizationName);
 .main-content {
   background-color: #ffffff; /* White background for main content */
   border-radius: 8px; /* Rounded corners */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.container {
+  max-width: 1280px; /* Limit maximum width of content */
+}
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1rem; /* Add padding for smaller screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem; /* Adjust padding for even smaller screens */
+  }
+}
+
+
+.logout-button {
+  background-color: ; /* Matching the header/footer color */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 </style>

@@ -1,13 +1,11 @@
+// src/store/index.js
 import { createStore } from 'vuex';
-import axios from 'axios';
 
 const store = createStore({
   state: {
     token: localStorage.getItem('token') || null,
     userName: localStorage.getItem('userName') || 'User',
     userRole: localStorage.getItem('userRole') || null,
-    user: null, // Added user state
-    organization: null, // Added organization state
     patients: [], // Array to hold patient data
   },
   mutations: {
@@ -27,77 +25,49 @@ const store = createStore({
       localStorage.removeItem('userRole');
       localStorage.removeItem('userName');
     },
-    setUser(state, user) {
-      state.user = user;
-    },
-    setOrganization(state, organization) {
-      state.organization = organization;
-    },
     ADD_PATIENT(state, patient) {
       state.patients.push(patient); // Mutate state to add a new patient
-    },
-    SET_PATIENTS(state, patients) {
-      state.patients = patients; // Mutation to set patients data
-    },
-    SET_PATIENT_DETAILS(state, patientDetails) {
-      // Mutation to set patient details, adjust according to your needs
     },
   },
   actions: {
     async login({ commit }, credentials) {
       try {
-        const response = await axios.post('http://localhost:8080/v1/graphql', {
-          query: `
-            query login($username: String!, $password: String!) {
-              users(where: { username: { _eq: $username }, password: { _eq: $password } }) {
-                id
-                username
-                role
-              }
-            }
-          `,
-          variables: credentials,
+        const response = await fetch('http://localhost:5000/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(credentials),
         });
 
-        const user = response.data.data.users[0];
-        if (user) {
-          const token = 'your_generated_token'; // This should be handled properly in your auth flow
-          commit('setToken', { token, role: user.role, userName: user.username });
-          commit('setUser', user);
-          return true;
-        } else {
-          return false;
+        if (!response.ok) {
+          throw new Error('Login failed');
         }
+
+        const { token, role, userName } = await response.json();
+        commit('setToken', { token, role, userName }); // Save token, role, and userName to Vuex state
+        return true;
       } catch (error) {
-        console.error('Login error:', error);
+        console.error('Error logging in:', error);
         return false;
       }
     },
-    async fetchOrganization({ commit, state }) {
-      try {
-        if (!state.user || !state.user.id) return;
-        
-        const response = await axios.post('http://localhost:8080/v1/graphql', {
-          query: `
-            query getOrganization {
-              users_by_pk(id: 175) {
-                organization {
-                  name
-                }
-              }
-            }
-          `,
-          variables: {
-            userId: state.user.id
-          },
-        });
 
-        const organization = response.data.data.users_by_pk.organization;
-        commit('setOrganization', organization);
-      } catch (error) {
-        console.error('Error fetching organization:', error);
-      }
-    },
+    // async login({ commit }, credentials) {
+    //   const response = await axios.post('http://localhost:8080/v1/auth/login', credentials);
+    //   commit('setUser', response.data.user);
+    //   commit('setToken', response.data.token);
+    // },
+    // async fetchUser({ commit }) {
+    //   const response = await axios.get('http://localhost:8080/v1/auth/user', {
+    //     headers: { Authorization: `Bearer ${this.state.token}` },
+    //   });
+    //   commit('setUser', response.data);
+    // },
+  
+  
+
+    
     async submitForm({ commit }, newPatient) {
       try {
         const response = await fetch('http://localhost:5000/api/insert-patient', {
@@ -161,7 +131,6 @@ const store = createStore({
     },
     logout({ commit }) {
       commit('clearToken');
-      commit('setUser', null); // Clear user information on logout
     },
   },
   getters: {
@@ -169,8 +138,6 @@ const store = createStore({
     userName: (state) => state.userName,
     userRole: (state) => state.userRole,
     patients: (state) => state.patients,
-    user: (state) => state.user, // Add user getter
-    organization: (state) => state.organization, // Add organization getter
   },
 });
 

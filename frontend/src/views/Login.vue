@@ -1,6 +1,5 @@
-<!-- src/views/Login.vue -->
 <template>
-  <div class="login-container flex items-center justify-center  ">
+  <div class="login-container flex items-center justify-center">
     <div class="login-content w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-gray-800 mb-4">Login</h2>
       <form @submit.prevent="handleLogin">
@@ -36,47 +35,62 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { ref } from 'vue';
+import { useQuery } from '@vue/apollo-composable';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import { LOGIN_QUERY } from '../graphql/loginQuery';
 
 export default {
   name: 'Login',
-  data() {
-    return {
-      username: '',
-      password: '',
-    };
-  },
-  methods: {
-    ...mapActions(['login']),
-    async handleLogin() {
-      const credentials = {
-        username: this.username,
-        password: this.password,
-      };
-      const success = await this.login(credentials);
-      if (success) {
-        const role = this.$store.getters.userRole;
-        if (role === 'Reception') {
-          this.$router.push('/reception-dashboard');
+  setup() {
+    const username = ref('');
+    const password = ref('');
+    const router = useRouter();
+    const store = useStore();
+
+    const handleLogin = async () => {
+      const { result, loading, error } = useQuery(LOGIN_QUERY, {
+        username: username.value,
+        password: password.value,
+      });
+
+      if (loading.value) return;
+
+      if (error.value) {
+        alert('An error occurred during login. Please try again.');
+        console.error('Login error:', error.value);
+        return;
+      }
+
+      const user = result.value.users[0];
+      if (user) {
+        store.commit('setUser', user); //  Vuex store to manage user state
+        const role = user.role;
+        if (role === 'Receptionist') {
+          router.push('/reception-dashboard');
         } else if (role === 'healthcare-worker') {
-          this.$router.push('/healthcare-worker-dashboard');
-        } else if (role === 'doctor') {
-          this.$router.push('/doctor-dashboard');
+          router.push('/healthcare-worker-dashboard');
+        } else if (role === 'Doctor') {
+          router.push('/doctor-dashboard');
         } else if (role === 'Admin') {
-          this.$router.push('/admin-dashboard');
+          router.push('/admin-dashboard');
         }
       } else {
         alert('Login failed. Please check your credentials and try again.');
       }
-    },
+    };
+
+    return {
+      username,
+      password,
+      handleLogin,
+    };
   },
 };
 </script>
 
 <style scoped>
-/* .login-container {
-  background-color: // Light blue background for login page 
-} */
 .login-content {
   max-width: 400px;
 }
