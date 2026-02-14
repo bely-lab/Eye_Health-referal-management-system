@@ -4,9 +4,9 @@ A web-based referral management system for eye health services.
 
 ## Tech Stack
 - Frontend: Vue.js + Vite
-- Backend: Node.js (API)
-- Database: (add yours: MongoDB / MySQL / PostgreSQL)
-- Docker: docker-compose (optional)
+- Backend: Node.js 
+- Database: PostgreSQL
+- Docker: docker-compose
 
 ## Project Structure
 - `frontend/` - Vue client app
