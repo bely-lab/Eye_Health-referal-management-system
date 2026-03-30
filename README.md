@@ -1,4 +1,4 @@
-# Eye Health Referral Management System
+## Eye Health Referral Management System
 
 A web-based referral management system for eye health services.
 
