@@ -1,6 +1,6 @@
 ## Eye Health Referral Management System
 
-A web-based referral management system for eye health services.
+A web-based patient referral linkeage system for eye health services.
 
 ## Tech Stack
 - Frontend: Vue.js + Vite
